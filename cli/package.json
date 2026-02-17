@@ -1,0 +1,14 @@
+{
+    "name": "markedjs-cli",
+    "version": "1.0.0",
+    "description": "Preview CLI for MarkedJS Documentation",
+    "bin": {
+        "markedjs-preview": "./bin/preview.js"
+    },
+    "scripts": {
+        "start": "node bin/preview.js"
+    },
+    "dependencies": {
+        "markedjs-backend": "file:../backend"
+    }
+}

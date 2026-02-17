@@ -1,0 +1,16 @@
+{
+    "products": [
+        {
+            "id": "s3",
+            "title": "Object Storage Service",
+            "path": "infrastructure/cloud/s3",
+            "description": "Scalable object storage in the cloud."
+        },
+        {
+            "id": "sso",
+            "title": "Single Sign On",
+            "path": "security/identity/sso",
+            "description": "Centralized identity management."
+        }
+    ]
+}
