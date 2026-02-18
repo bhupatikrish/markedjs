@@ -328,6 +328,13 @@ function renderSidebar() {
 }
 
 function renderLandingPage(container) {
+    // Clear TOC
+    const tocSidebar = document.getElementById('toc-sidebar');
+    if (tocSidebar) {
+        tocSidebar.innerHTML = '';
+        tocSidebar.classList.remove('visible');
+    }
+
     let html = `
     <div class="hero-section">
         <div class="hero-title">Documentation Portal</div>
@@ -368,7 +375,6 @@ function renderLandingPage(container) {
                     html += `
             <div class="product-card">
                 <h3>${p.title}</h3>
-                <p class="meta">/docs/${p.path}</p>
                 <p>${p.description || 'Comprehensive guides and API references.'}</p>
                 <a href="/docs/${p.path}/intro" data-link class="btn">View Documentation</a>
             </div>`;

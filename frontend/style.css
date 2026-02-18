@@ -37,31 +37,39 @@ body {
 /* Header */
 .app-header {
     height: var(--header-height);
-    background-color: #ffffff;
-    border-bottom: 1px solid var(--border-color);
+    background: linear-gradient(90deg, #091E42 0%, #253858 100%);
+    color: #ffffff;
+    border-bottom: none;
     display: flex;
     align-items: center;
     padding: 0 24px;
     flex-shrink: 0;
     z-index: 100;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
-    font-weight: 700;
-    font-size: 1.1rem;
+    font-weight: 600;
+    font-size: 1.25rem;
     text-decoration: none;
-    color: var(--primary-color);
+    color: #ffffff;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    letter-spacing: -0.01em;
 }
 
 .header-context {
-    color: var(--text-secondary);
-    padding-left: 15px;
-    margin-left: 15px;
-    border-left: 1px solid var(--border-color);
+    color: #B3BAC5;
+    padding-left: 16px;
+    margin-left: 16px;
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
     font-size: 0.9rem;
+    font-weight: 400;
+}
+
+.menu-toggle {
+    color: #ffffff;
 }
 
 /* Layout */
@@ -521,7 +529,7 @@ details[open] summary.nav-system::after {
     cursor: pointer;
     padding: 0;
     margin-right: 16px;
-    color: var(--text-secondary);
+    color: inherit;
 }
 
 .sidebar-backdrop {
