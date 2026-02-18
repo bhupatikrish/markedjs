@@ -62,9 +62,9 @@ function startServer(port = GLOBAL_DEFAULT_PORT, contentDir) {
             }
 
             const content = fs.readFileSync(filePath, 'utf8');
-            const html = renderMarkdown(content);
+            const { html, toc } = renderMarkdown(content);
 
-            res.json({ html });
+            res.json({ html, toc });
 
         } catch (e) {
             console.error(e);

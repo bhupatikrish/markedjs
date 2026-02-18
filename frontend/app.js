@@ -3,6 +3,7 @@ const API_BASE = '/api';
 // State
 let catalog = {};
 let currentContext = 'catalog'; // 'catalog' or 'product'
+let lastRenderedPath = '';
 
 async function init() {
     try {
@@ -34,6 +35,9 @@ async function init() {
                     sidebar.classList.remove('open');
                     backdrop.classList.remove('open');
                 }
+            } else if (e.target.matches('[data-toc-link]')) {
+                // Allow default behavior for anchor links (updating hash)
+                // But popstate will fire, so handleRouting needs to know not to re-render
             }
         });
 
@@ -66,6 +70,20 @@ function navigateTo(url) {
 
 async function handleRouting() {
     const path = window.location.pathname;
+
+    // If path hasn't changed (e.g. hash change), don't re-render
+    if (path === lastRenderedPath) {
+        // We might want to handle scroll if hash is present
+        if (window.location.hash) {
+            const id = window.location.hash.substring(1);
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView();
+        }
+        return;
+    }
+
+    lastRenderedPath = path;
+
     const contentDiv = document.getElementById('content-area');
     if (!contentDiv) return;
 
@@ -103,6 +121,13 @@ async function renderDocPage(container, apiPath) {
     try {
         container.innerHTML = '<div class="loading">Loading content...</div>';
 
+        // Clear TOC
+        const tocSidebar = document.getElementById('toc-sidebar');
+        if (tocSidebar) {
+            tocSidebar.innerHTML = '';
+            tocSidebar.classList.remove('visible');
+        }
+
         const res = await fetch(`${API_BASE}/page/${apiPath}`);
         if (!res.ok) throw new Error(`Document not found: ${apiPath}`);
 
@@ -110,6 +135,11 @@ async function renderDocPage(container, apiPath) {
 
         // Backend returns pre-rendered HTML
         container.innerHTML = `<div class="markdown-body">${data.html}</div>`;
+
+        // Render TOC if available
+        if (data.toc && data.toc.length > 0 && tocSidebar) {
+            renderTOC(data.toc, tocSidebar);
+        }
 
         // Custom mermaid initialization for the rendered content
         if (window.mermaid) {
@@ -131,6 +161,58 @@ async function renderDocPage(container, apiPath) {
     } catch (e) {
         container.innerHTML = `<h1>Error</h1><p>${e.message}</p>`;
     }
+}
+
+function renderTOC(toc, container) {
+    container.classList.add('visible');
+
+    let html = '<div class="toc-title">On this page</div><ul class="toc-list">';
+
+    toc.forEach(item => {
+        const indentClass = item.depth === 3 ? 'toc-depth-3' : '';
+        html += `<li class="toc-item ${indentClass}">
+    <a href="#${item.id}" class="toc-link" data-toc-link>${item.text}</a>
+</li>`;
+    });
+
+    html += '</ul>';
+    container.innerHTML = html;
+
+    // Scroll Spy Implementation
+    setupScrollSpy();
+}
+
+function setupScrollSpy() {
+    const observerOptions = {
+        root: document.getElementById('content-area'), // Watch scroll in content area
+        rootMargin: '0px 0px -80% 0px', // Trigger when element is near top
+        threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Activate link
+                const id = entry.target.id;
+
+                // Clear all active
+                document.querySelectorAll('.toc-link').forEach(link => link.classList.remove('active'));
+
+                // Set active
+                const activeLink = document.querySelector(`.toc-link[href="#${id}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                    // Ensure TOC scrolls to active item
+                    activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
+            }
+        });
+    }, observerOptions);
+
+    // Observe all headings
+    document.querySelectorAll('.markdown-body h2, .markdown-body h3').forEach(heading => {
+        observer.observe(heading);
+    });
 }
 
 function renderSidebar() {
@@ -179,10 +261,10 @@ function renderSidebar() {
                     const activeClass = isActive ? 'active' : '';
 
                     html += `<li>
-                        <a href="${fullItemPath}" data-link class="nav-page-link ${activeClass}">
-                            ${item.Label}
-                        </a>
-                    </li>`;
+                <a href="${fullItemPath}" data-link class="nav-page-link ${activeClass}">
+                    ${item.Label}
+                </a>
+            </li>`;
                 });
                 html += '</ul>';
             } else {
@@ -226,13 +308,13 @@ function renderSidebar() {
 
                 for (const [system, products] of Object.entries(systems)) {
                     html += `<details open>
-                        <summary class="nav-system">${system}</summary>
-                        <ul class="nav-products">`;
+                <summary class="nav-system">${system}</summary>
+                <ul class="nav-products">`;
 
                     products.forEach(p => {
                         html += `<li>
-                            <a href="/docs/${p.path}/intro" data-link class="nav-product-link">${p.title}</a>
-                        </li>`;
+                    <a href="/docs/${p.path}/intro" data-link class="nav-product-link">${p.title}</a>
+                </li>`;
                     });
 
                     html += `</ul></details>`;
@@ -275,21 +357,21 @@ function renderLandingPage(container) {
 
         for (const [domain, systems] of Object.entries(hierarchy)) {
             html += `<div class="domain-section">
-                <div class="domain-title">${domain}</div>`;
+        <div class="domain-title">${domain}</div>`;
 
             for (const [system, products] of Object.entries(systems)) {
                 html += `<div class="system-group">
-                    <div class="system-title">${system}</div>
-                    <div class="product-grid">`;
+            <div class="system-title">${system}</div>
+            <div class="product-grid">`;
 
                 products.forEach(p => {
                     html += `
-                    <div class="product-card">
-                        <h3>${p.title}</h3>
-                        <p class="meta">/docs/${p.path}</p>
-                        <p>${p.description || 'Comprehensive guides and API references.'}</p>
-                        <a href="/docs/${p.path}/intro" data-link class="btn">View Documentation</a>
-                    </div>`;
+            <div class="product-card">
+                <h3>${p.title}</h3>
+                <p class="meta">/docs/${p.path}</p>
+                <p>${p.description || 'Comprehensive guides and API references.'}</p>
+                <a href="/docs/${p.path}/intro" data-link class="btn">View Documentation</a>
+            </div>`;
                 });
 
                 html += `</div></div>`;
